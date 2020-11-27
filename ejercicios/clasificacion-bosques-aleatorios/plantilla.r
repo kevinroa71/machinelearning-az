@@ -1,5 +1,5 @@
 # Importo el dataset
-dataset <- read.csv(file = './ejercicios/naive-bayes/Social_Network_Ads.csv')
+dataset <- read.csv(file = './ejercicios/clasificacion-bosques-aleatorios/Social_Network_Ads.csv')
 
 # Datos categoricos
 purchased = unique(dataset$Purchased)
@@ -17,17 +17,13 @@ split = sample.split(dataset$Purchased, SplitRatio = 0.8)
 training_set = subset(dataset, split == TRUE)
 testing_set  = subset(dataset, split == FALSE)
 
-# Escalar los datos
-training_set[, 3:4] = scale(training_set[, 3:4])
-testing_set[, 3:4]  = scale(testing_set[, 3:4])
 
-# Ajustar modelo de naivebayes
-install.packages('e1071')
-library(e1071)
-clasificador = naiveBayes(formula = Purchased ~ Age + EstimatedSalary, data = training_set)
+# Ajustar modelo de bosques aleatorios
+library(randomForest)
+clasificador = randomForest(formula = Purchased ~ Age + EstimatedSalary, data = training_set, ntree=100)
 
 # Prediccion de los resultados
-y_predic = predict(clasificador, newdata = testing_set)
+y_predic = predict(clasificador, newdata = testing_set, type = "class")
 
 # Crear la matriz de confusion
 cm = table(testing_set[, 5], y_predic)
@@ -35,11 +31,11 @@ cm = table(testing_set[, 5], y_predic)
 # Vizualizacion de los datos
 library(ElemStatLearn)
 set = testing_set[, 3:5]
-X1 = seq(min(set[, 1]) - 1, max(set[, 1]) + 1, by = 0.01)
-X2 = seq(min(set[, 2]) - 1, max(set[, 2]) + 1, by = 0.01)
+X1 = seq(min(set[, 1]) - 1, max(set[, 1]) + 1, by = 0.1)
+X2 = seq(min(set[, 2]) - 1, max(set[, 2]) + 1, by = 250)
 grid_set = expand.grid(X1, X2)
 colnames(grid_set) = c('Age', 'EstimatedSalary')
-y_grid = predict(clasificador, newdata = grid_set)
+y_grid = predict(clasificador, newdata = grid_set, type = "class")
 plot(set[, -3],
      main = 'Clasificación (Conjunto de testing)',
      xlab = 'Edad', ylab = 'Sueldo Estimado',
